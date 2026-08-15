@@ -40,10 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Fetch Latest Ariang Version
-        run: |
-          VERSION=$(curl -s https://api.github.com/repos/mayswind/AriaNg/releases/latest | jq -r .tag_name)
-          echo "ARIANG_VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Read Ariang Version
+        run: echo "ARIANG_VERSION=$(jq -r .ariang .versions.json)" >> $GITHUB_ENV
 
       - uses: docker/setup-buildx-action@v4
 
