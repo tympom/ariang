@@ -1,0 +1,13 @@
+FROM nginx:alpine
+
+ARG ARIANG_VERSION=1.3.14
+
+RUN apk add --no-cache curl unzip \
+    && curl -fsSL -o /tmp/ariang.zip \
+       https://github.com/mayswind/AriaNg/releases/download/${ARIANG_VERSION}/AriaNg-${ARIANG_VERSION}.zip \
+    && rm -rf /usr/share/nginx/html/* \
+    && unzip -o /tmp/ariang.zip -d /usr/share/nginx/html \
+    && rm /tmp/ariang.zip \
+    && apk del curl unzip
+
+EXPOSE 80
