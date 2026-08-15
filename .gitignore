@@ -1,0 +1,4 @@
+downloads/
+aria2.conf
+*.session
+.DS_Store
