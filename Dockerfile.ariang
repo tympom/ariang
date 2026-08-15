@@ -9,8 +9,10 @@ RUN apk add --no-cache curl unzip \
     && unzip -o /tmp/ariang.zip -d /tmp/ariang
 
 # Final stage
-FROM nginx:alpine
+FROM caddy:alpine
 
-COPY --from=builder /tmp/ariang /usr/share/nginx/html
+COPY --from=builder /tmp/ariang /usr/share/caddy
 
 EXPOSE 80
+
+CMD ["caddy", "file-server", "--root", "/usr/share/caddy"]
