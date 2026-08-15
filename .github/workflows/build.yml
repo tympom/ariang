@@ -3,11 +3,6 @@ name: Build and push images
 on:
   push:
     branches: [main]
-    paths:
-      - "Dockerfile.aria2"
-      - "Dockerfile.ariang"
-      - ".github/workflows/build.yml"
-      - ".versions.json"
   workflow_dispatch: {}
 
 env:
