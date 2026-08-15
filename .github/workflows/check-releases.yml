@@ -36,17 +36,20 @@ jobs:
           MSG=""
           
           if [ "$ARIANG_LATEST" != "$CURRENT_ARIANG" ]; then
-            MSG="$MSG- Ariang: $CURRENT_ARIANG $\rightarrow$ $ARIANG_LATEST\n"
+            MSG="$MSG- Ariang: $CURRENT_ARIANG $\rightarrow$ $ARIANG_LATEST"$'\\n'
             NEW_FOUND=true
           fi
           
           if [ "$ARIA2_LATEST" != "$CURRENT_ARIA2" ]; then
-            MSG="$MSG- Aria2: $CURRENT_ARIA2 $\rightarrow$ $ARIA2_LATEST\n"
+            MSG="$MSG- Aria2: $CURRENT_ARIA2 $\rightarrow$ $ARIA2_LATEST"$'\\n'
             NEW_FOUND=true
           fi
           
           echo "new_found=$NEW_FOUND" >> $GITHUB_OUTPUT
-          echo "message=$(echo -e $MSG)" >> $GITHUB_OUTPUT
+          
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "$MSG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Issue
         if: steps.compare.outputs.new_found == 'true'
