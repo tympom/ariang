@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
 
 jobs:
   check:
@@ -15,64 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Fetch Latest Versions
-        id: fetch
+      - name: Update Versions
         run: |
-          ARIANG_JSON=$(curl -s https://api.github.com/repos/mayswind/AriaNg/releases/latest)
-          ARIA2_JSON=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest)
+          ARIANG=$(curl -s https://api.github.com/repos/mayswind/AriaNg/releases/latest | jq -r .tag_name)
+          ARIA2=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r .tag_name | sed 's/v//')
           
-          ARIANG_LATEST=$(echo "$ARIANG_JSON" | jq -r .tag_name // "null")
-          ARIA2_LATEST=$(echo "$ARIA2_JSON" | jq -r .tag_name // "null" | sed 's/v//')
+          echo "{\"ariang\": \"$ARIANG\", \"aria2\": \"$ARIA2\"}" > .versions.json
           
-          echo "ariang=$ARIANG_LATEST" >> $GITHUB_OUTPUT
-          echo "aria2=$ARIA2_LATEST" >> $GITHUB_OUTPUT
-
-      - name: Compare Versions
-        id: compare
-        env:
-          ARIANG_LATEST: ${{ steps.fetch.outputs.ariang }}
-          ARIA2_LATEST: ${{ steps.fetch.outputs.aria2 }}
-        run: |
-          set -x
-          CURRENT_ARIANG=$(jq -r .ariang .versions.json)
-          CURRENT_ARIA2=$(jq -r .aria2 .versions.json)
-          
-          NEW_FOUND=false
-          MSG=""
-          
-          if [ "$ARIANG_LATEST" != "null" ] && [ "$ARIANG_LATEST" != "$CURRENT_ARIANG" ]; then
-            MSG="$MSG- Ariang: $CURRENT_ARIANG -> $ARIANG_LATEST"$'\n'
-            NEW_FOUND=true
-          fi
-          
-          if [ "$ARIA2_LATEST" != "null" ] && [ "$ARIA2_LATEST" != "$CURRENT_ARIA2" ]; then
-            MSG="$MSG- Aria2: $CURRENT_ARIA2 -> $ARIA2_LATEST"$'\n'
-            NEW_FOUND=true
-          fi
-          
-          echo "new_found=$NEW_FOUND" >> $GITHUB_OUTPUT
-          
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "$MSG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Create Issue
-        if: steps.compare.outputs.new_found == 'true'
-        run: |
-          gh issue create \
-            --title "🚀 New Releases Available" \
-            --body "The following updates were detected:
-            
-            ${{ steps.compare.outputs.message }}
-            
-            These will be automatically picked up by the next build." || echo "Failed to create issue (check if Issues are enabled in repo settings)"
-
-      - name: Update Versions File
-        if: steps.compare.outputs.new_found == 'true'
-        run: |
-          jq ".ariang = \"${{ steps.fetch.outputs.ariang }}\" | .aria2 = \"${{ steps.fetch.outputs.aria2 }}\"" .versions.json > .versions.json.tmp && mv .versions.json.tmp .versions.json
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .versions.json
-          git commit -m "chore: update monitored versions" || echo "No changes to commit"
-          git push || echo "Failed to push changes (check if main branch is protected)"
+          git commit -m "chore: update versions" || echo "No changes to commit"
+          git push
