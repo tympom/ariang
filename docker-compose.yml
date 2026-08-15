@@ -1,0 +1,32 @@
+services:
+  aria2:
+    image: ${REGISTRY}/${USER}/aria2:latest
+    container_name: aria2
+    restart: unless-stopped
+    command: [
+      "aria2c",
+      "--enable-rpc",
+      "--rpc-allow-origin-all",
+      "--rpc-listen-all",
+      "--rpc-listen-port=6800",
+      "--rpc-secret=${ARIA2_SECRET}",
+      "--dir=/home/aria2/downloads"
+    ]
+    volumes:
+      - aria2_downloads:/home/aria2/downloads
+    ports:
+      - "6800:6800"
+      - "6888:6888"
+      - "6888:6888/udp"
+
+  ariang:
+    image: ${REGISTRY}/${USER}/ariang:latest
+    container_name: ariang
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - aria2
+
+volumes:
+  aria2_downloads:
