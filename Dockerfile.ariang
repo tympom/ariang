@@ -1,13 +1,16 @@
-FROM nginx:alpine
+# Build stage
+FROM alpine:latest AS builder
 
 ARG ARIANG_VERSION
 
 RUN apk add --no-cache curl unzip \
     && curl -fsSL -o /tmp/ariang.zip \
        https://github.com/mayswind/AriaNg/releases/download/${ARIANG_VERSION}/AriaNg-${ARIANG_VERSION}.zip \
-    && rm -rf /usr/share/nginx/html/* \
-    && unzip -o /tmp/ariang.zip -d /usr/share/nginx/html \
-    && rm /tmp/ariang.zip \
-    && apk del curl unzip
+    && unzip -o /tmp/ariang.zip -d /tmp/ariang
+
+# Final stage
+FROM nginx:alpine
+
+COPY --from=builder /tmp/ariang /usr/share/nginx/html
 
 EXPOSE 80
