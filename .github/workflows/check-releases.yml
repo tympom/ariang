@@ -18,8 +18,12 @@ jobs:
       - name: Fetch Latest Versions
         id: fetch
         run: |
-          ARIANG_LATEST=$(curl -s https://api.github.com/repos/mayswind/AriaNg/releases/latest | jq -r .tag_name)
-          ARIA2_LATEST=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest | jq -r .tag_name | sed 's/v//')
+          ARIANG_JSON=$(curl -s https://api.github.com/repos/mayswind/AriaNg/releases/latest)
+          ARIA2_JSON=$(curl -s https://api.github.com/repos/aria2/aria2/releases/latest)
+          
+          ARIANG_LATEST=$(echo "$ARIANG_JSON" | jq -r .tag_name // "null")
+          ARIA2_LATEST=$(echo "$ARIA2_JSON" | jq -r .tag_name // "null" | sed 's/v//')
+          
           echo "ariang=$ARIANG_LATEST" >> $GITHUB_OUTPUT
           echo "aria2=$ARIA2_LATEST" >> $GITHUB_OUTPUT
 
@@ -29,19 +33,20 @@ jobs:
           ARIANG_LATEST: ${{ steps.fetch.outputs.ariang }}
           ARIA2_LATEST: ${{ steps.fetch.outputs.aria2 }}
         run: |
+          set -x
           CURRENT_ARIANG=$(jq -r .ariang .versions.json)
           CURRENT_ARIA2=$(jq -r .aria2 .versions.json)
           
           NEW_FOUND=false
           MSG=""
           
-          if [ "$ARIANG_LATEST" != "$CURRENT_ARIANG" ]; then
-            MSG="$MSG- Ariang: $CURRENT_ARIANG $\rightarrow$ $ARIANG_LATEST"$'\\n'
+          if [ "$ARIANG_LATEST" != "null" ] && [ "$ARIANG_LATEST" != "$CURRENT_ARIANG" ]; then
+            MSG="$MSG- Ariang: $CURRENT_ARIANG -> $ARIANG_LATEST"$'\n'
             NEW_FOUND=true
           fi
           
-          if [ "$ARIA2_LATEST" != "$CURRENT_ARIA2" ]; then
-            MSG="$MSG- Aria2: $CURRENT_ARIA2 $\rightarrow$ $ARIA2_LATEST"$'\\n'
+          if [ "$ARIA2_LATEST" != "null" ] && [ "$ARIA2_LATEST" != "$CURRENT_ARIA2" ]; then
+            MSG="$MSG- Aria2: $CURRENT_ARIA2 -> $ARIA2_LATEST"$'\n'
             NEW_FOUND=true
           fi
           
