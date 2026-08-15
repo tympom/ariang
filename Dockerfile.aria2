@@ -1,0 +1,12 @@
+FROM alpine
+
+RUN apk add --no-cache aria2 tini \
+    && adduser -D -u 1000 aria2
+
+USER aria2
+WORKDIR /home/aria2
+
+EXPOSE 6800 6888 6888/udp
+
+ENTRYPOINT ["tini", "--"]
+CMD ["aria2c", "--conf-path=/home/aria2/aria2.conf"]
